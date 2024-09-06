@@ -11,11 +11,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOGIN_URL = '/login/'
+
+# Inicializar environ
+env = environ.Env()
+# Leer el archivo .env
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,7 +34,7 @@ SECRET_KEY = 'django-insecure-)aj=ir1(xit7l3xa*3k(m1p0-@61slg7uv)_wke=b=9qee439k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['3.85.3.154']
+ALLOWED_HOSTS = ['127.0.0.1', '3.85.3.154']
 
 
 # Application definition
@@ -81,9 +88,9 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'task_manager',
-        'USER': 'postgres',
-        'PASSWORD': 'ppvleLa28ApR',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -135,7 +142,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = 'ab27c117650950'
-EMAIL_HOST_PASSWORD = '9015e70bd49fb6'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = '2525'
