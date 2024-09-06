@@ -82,7 +82,7 @@ DATABASES = {
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'task_manager',
-        'USER': 'postgres',
+        'USER': 'alfredobarron',
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '5432',
