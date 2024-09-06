@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <script>
+        let currentPage = 1;
+        const tasksPerPage = 10;
+
+        // Fetch tasks with pagination
+        async function fetchTasks(page = 1) {
+            currentPage = page;
+            const response = await fetch(`/api/tasks?page=${page}`);
+            const data = await response.json();
+            let taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+
+            if (data.tasks.length > 0) {
+                data.tasks.forEach(task => {
+                    taskList.innerHTML += `<li>
+                        <strong>${task.title}</strong> - ${task.description} 
+                        <button onclick="deleteTask(${task.id})">Delete</button>
+                        <button onclick="editTask(${task.id}, '${task.title}', '${task.description}')">Edit</button>
+                    </li>`;
+                });
+
+                document.getElementById('pagination').innerHTML = `
+                    <button ${currentPage === 1 ? 'disabled' : ''} onclick="fetchTasks(${currentPage - 1})">Previous</button>
+                    <span>Page ${currentPage} of ${data.total_pages}</span>
+                    <button ${currentPage === data.total_pages ? 'disabled' : ''} onclick="fetchTasks(${currentPage + 1})">Next</button>
+                `;
+            } else {
+                document.getElementById('pagination').innerHTML = 'No tasks available';
+            }
+        }
+
+        // Create a new task
+        async function createTask() {
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-desc').value;
+            const due_date = document.getElementById('task-due-date').value || null;
+            const email = document.getElementById('task-email').value;
+
+            const response = await fetch('/api/tasks/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, due_date, email })
+            });
+            if (response.ok) {
+                fetchTasks(currentPage);
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-desc').value = '';
+                document.getElementById('task-due-date').value = '';
+                document.getElementById('task-email').value = '';
+            }
+        }
+
+        // Delete a task
+        async function deleteTask(id) {
+            await fetch(`/api/tasks/${id}`, {
+                method: 'DELETE'
+            });
+            fetchTasks(currentPage);
+        }
+
+        // Edit a task
+        function editTask(id, title, description) {
+            document.getElementById('task-id').value = id;
+            document.getElementById('task-title').value = title;
+            document.getElementById('task-desc').value = description;
+            document.getElementById('submit-task').style.display = 'none';
+            document.getElementById('update-task').style.display = 'inline';
+        }
+
+        // Update a task
+        async function updateTask() {
+            const id = document.getElementById('task-id').value;
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-desc').value;
+
+            await fetch(`/api/tasks/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+            fetchTasks(currentPage);
+            document.getElementById('task-title').value = '';
+            document.getElementById('task-desc').value = '';
+            document.getElementById('task-id').value = '';
+            document.getElementById('submit-task').style.display = 'inline';
+            document.getElementById('update-task').style.display = 'none';
+        }
+
+        // Load tasks on page load
+        window.onload = function() {
+            fetchTasks(currentPage);
+        };
+    </script>
+</head>
+<body>
+    <h1>Task Manager</h1>
+
+    <!-- Botón de Logout -->
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+    <!-- Form to create or update tasks -->
+    <div>
+        <input type="hidden" id="task-id">
+        <input type="text" id="task-title" placeholder="Task Title">
+        <input type="text" id="task-desc" placeholder="Task Description">
+        <input type="date" id="task-due-date" placeholder="Due Date">
+        <input type="email" id="task-email" placeholder="User Email">
+        <button id="submit-task" onclick="createTask()">Add Task</button>
+        <button id="update-task" onclick="updateTask()" style="display:none;">Update Task</button>
+    </div>
+
+    <!-- List of tasks -->
+    <h2>Tasks:</h2>
+    <ul id="task-list">
+        <!-- Task items will be dynamically loaded here -->
+    </ul>
+
+    <!-- Pagination controls -->
+    <div id="pagination">
+        <!-- Pagination buttons will be dynamically loaded here -->
+    </div>
+</body>
+</html>
