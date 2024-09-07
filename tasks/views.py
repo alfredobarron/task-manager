@@ -57,7 +57,7 @@ def task_list_create(request):
             'total_pages': paginator.num_pages,
             'current_page': page_obj.number,
             'total_tasks': paginator.count
-        })
+        }, status=200)
 
     elif request.method == 'POST':
         data = json.loads(request.body)
@@ -88,4 +88,4 @@ def task_detail_update_delete(request, id):
 
     elif request.method == 'DELETE':
         task.delete()
-        return JsonResponse({'message': 'Task deleted'}, status=204)
+        return JsonResponse({'message': 'Task deleted'}, status=200)
